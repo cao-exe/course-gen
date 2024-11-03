@@ -75,6 +75,10 @@ An Example Course:
 
 ![add-course](documentation/add-course.png)
 
+/account - page for viewing user account
+
+![account](documentation/account.png)
+
 ## Site map
 
 ![Site Map](documentation/SitemapV1.png)
