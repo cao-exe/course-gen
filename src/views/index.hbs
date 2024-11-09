@@ -11,10 +11,10 @@
     </header>
     <main>
         <ul>
-            {{#if user.courses.length}}
+            {{#if user.courses}}
                 {{#each user.courses}}
                     <li>
-                        <h2>{{this.title}}</h2>
+                        <h2>Title:{{this.title}}</h2>
                         <p>Professor: {{this.professor}}</p>
                         <p>Priority: {{this.priority}}</p>
                         <p>Days: {{this.days}}</p>

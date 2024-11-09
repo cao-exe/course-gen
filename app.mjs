@@ -63,9 +63,10 @@ app.get('/login', (req, res) => {
 app.post('/login', auth.loginUser);
 app.get('/logout', auth.logoutUser);
 
-app.get('/index', (req, res) => {
+app.get('/index', async (req, res) => {
     if (req.isAuthenticated()) {
-        res.render('index', {user: req.user});
+        const user = await User.findById(req.user._id).populate('courses').populate('schedules').exec();
+        res.render('index', {user});
     } else {
         res.redirect('/login');
     }
