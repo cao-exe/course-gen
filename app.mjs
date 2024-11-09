@@ -73,9 +73,13 @@ app.get('/index', async (req, res) => {
 });
 
 app.get('/add-course', (req, res) => {
-    res.render('add-course');
+    if (req.isAuthenticated()) {
+        res.render('add-course')
     }
-);
+    else {
+        res.redirect('/login');
+    }
+});
 
 app.post('/add-course', async (req, res) => {
     const { title, professor, days, startTime, endTime, courseCredits, priority } = req.body;

@@ -20,7 +20,6 @@ An Example User:
 ```javascript
 {
   username: "tc3661",
-  hash: // a password hash,
   schedules: // an array of references to Schedule documents
   courses: // an array of references to Course documents
 }
@@ -114,9 +113,12 @@ An Example Course:
         * Semantic UI
 * (? points) External API (Undecided)
   * Implement Web Share API
-  * Use Bcrypt for user authentitcation 
+  ~~* Use Bcrypt for user authentitcation ~~
 
-10 points total out of 8 required points
+* (5 points) Integrate user authentication
+    * Passport.js is a middleware for Node.js that allows for user authentication. It is flexible and can be used with many different strategies. It is easy to use and has a large community. 
+    * Possible candidate solutions:
+        * Passport.js
 
 
 ## [Link to Initial Main Project File](app.mjs) 
