@@ -1,10 +1,8 @@
-The content below is an example project proposal / requirements document. Replace the text below the lines marked "__TODO__" with details specific to your project. Remove the "TODO" lines.
-
-# CourseGen
+# CSG Schedule Generator
 
 ## Overview
 
-Choosing courses for the upcoming semester is stressful. There are many schedule builder and planner applications yet what if you have too many course options? Most of these applications require you to manually build each schedule. This is when CourseGen comes in. 
+Choosing courses for the upcoming semester is stressful. There are many schedule builder and planner applications yet what if you have too many course options? Most of these applications require you to manually build each schedule. This is when the CSG Schedule Generator comes in. 
 
 After logging in, users can input classes and relevant information about that class that they're interested in and which will generate multiple possible schedules from various combinations of courses. The user can choose a course to be required/important which will result in the application priortize building the possible schedules around the required/important course(s). They will also be able to favorite specific schedules so that it will remain available the next time they log in. 
 
@@ -35,6 +33,7 @@ An Example Schedule:
   user: // a reference to a User object
   name: // name of schedule
   courses: // an array of references to Course documents
+  priorityCount: // number of priority courses in the schedule
   createdAt: // timestamp
 }
 ```
@@ -50,6 +49,7 @@ An Example Course:
   days: // days of the week that the lecture occurs on
   startTime: // start time of class
   endTime: // end time of class
+  courseCredits: // number of credits for the course
   createdAt: // timestamp
 }
 ```

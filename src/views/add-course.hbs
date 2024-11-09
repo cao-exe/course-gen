@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Course</title>
+</head>
+<body>
+    <h1>Add Course</h1>
+    <form action="/add-course" method="POST">
+        <div>
+            <label for="title">Course Title:</label>
+            <input type="text" id="title" name="title" required>
+        </div>
+        <div>
+            <label for="professor">Professor:</label>
+            <input type="text" id="professor" name="professor" required>
+        </div>
+        <div>
+            <label for="priority">Priority:</label>
+            <input type="checkbox" id="priority" name="priority">
+        </div>
+        <div>
+            <label for="days">Days:</label>
+            <input type="text" id="days" name="days" required>
+        </div>
+        <div>
+            <label for="startTime">Start Time:</label>
+            <input type="time" id="startTime" name="startTime" required>
+        </div>
+        <div>
+            <label for="endTime">End Time:</label>
+            <input type="time" id="endTime" name="endTime" required>
+        </div>
+        <div>
+            <label for="courseCredits">Course Credits:</label>
+            <input type="number" id="courseCredits" name="courseCredits" required>
+        </div>
+        <button type="submit">Add Course</button>
+    </form>
+</body>
+</html>z

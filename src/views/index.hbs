@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Courses</title>
+</head>
+<body>
+    <header>
+        <button onclick="window.location.href='/add-course'">Add Course</button>
+    </header>
+    <main>
+        <ul>
+            {{#if user.courses.length}}
+                {{#each user.courses}}
+                    <li>
+                        <h2>{{this.title}}</h2>
+                        <p>Professor: {{this.professor}}</p>
+                        <p>Priority: {{this.priority}}</p>
+                        <p>Days: {{this.days}}</p>
+                        <p>Start Time: {{this.startTime}}</p>
+                        <p>End Time: {{this.endTime}}</p>
+                        <p>Credits: {{this.courseCredits}}</p>
+                    </li>
+                {{/each}}
+            {{else}}
+                <li>No courses available.</li>
+            {{/if}}
+        </ul>
+    </main>
+</body>
+</html>
