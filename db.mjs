@@ -1,8 +1,7 @@
+import './config.mjs';
 import mongoose from 'mongoose';
-import dotenv from 'dotenv';
 import passportLocalMongoose from 'passport-local-mongoose';
 
-dotenv.config();
 mongoose.connect(process.env.DSN)
 .then(() => console.log('Connected to MongoDB'))
 .catch(err => console.error('Error connecting to MongoDB', err));

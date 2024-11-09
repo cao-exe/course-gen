@@ -1,3 +1,4 @@
+import './config.mjs';
 import './db.mjs';
 import express from 'express'
 import session from 'express-session';
@@ -7,6 +8,7 @@ import mongoose from 'mongoose';
 import hbs from 'hbs';
 import passport from 'passport';
 import * as auth from './auth.mjs';
+
 
 
 const app = express();

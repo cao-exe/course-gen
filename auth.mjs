@@ -1,3 +1,4 @@
+import './config.mjs';
 import passport from 'passport';
 import mongoose from 'mongoose';
 
