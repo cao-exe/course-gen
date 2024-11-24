@@ -20,7 +20,8 @@ mongoose.connect(process.env.DSN)
 const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   schedules: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Schedule' }],
-  courses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Course' }]
+  courses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Course' }],
+
 });
 
 // Schedule Schema
@@ -39,8 +40,30 @@ const scheduleSchema = new mongoose.Schema({
   name: { type: String, required: true },
   courses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Course' }],
   priorityCount: { type: Number, default: 0 },
+  totalCredits: { type: Number, default: 0 },
   createdAt: { type: Date, default: Date.now }
 });
+
+// Schedule Schema
+/**
+ * Schedule schema definition.
+ * 
+ * @typedef {Object} Schedule
+ * @property {ObjectId} user - Reference to the User who owns the schedule. Required.
+ * @property {string} name - The name of the schedule. Required.
+ * @property {ObjectId[]} courses - Array of references to Course objects.
+ * @property {number} priorityCount - The number of priority courses. Defaults to 0.
+ * @property {Date} [createdAt=Date.now] - The date when the schedule was created. Defaults to the current date.
+ */
+const savedScheduleSchema = new mongoose.Schema({
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  name: { type: String, required: true },
+  courses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Course' }],
+  priorityCount: { type: Number, default: 0 },
+  totalCredits: { type: Number, default: 0 },
+  createdAt: { type: Date, default: Date.now }
+});
+
 
 // Course Schema
 /**

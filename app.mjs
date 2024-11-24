@@ -27,6 +27,11 @@ app.use(session({
     cookie: { secure: false }, // Set secure: true if using HTTPS in production
 }));
 
+// Bootstrap Middleware
+app.use('/css', express.static(path.join(__dirname, 'node_modules/bootstrap/dist/css')));
+app.use('/css', express.static(path.join(__dirname, 'src/public/css')));
+app.use('/js', express.static(path.join(__dirname, 'node_modules/bootstrap/dist/js')));
+
 // Passport initialization
 app.use(passport.initialize());
 app.use(passport.session());
@@ -39,7 +44,8 @@ const User = mongoose.model('User');
 passport.use(User.createStrategy());
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
-
+app.use('/css', express.static(path.join(__dirname, 'node_modules/bootstrap/dist/css')));
+app.use('/js', express.static(path.join(__dirname, 'node_modules/bootstrap/dist/js')));
 
 /////////////////////////////////////////////////////////
 
@@ -52,12 +58,12 @@ app.get('/', (req, res) => {
 
 
 app.get('/register', (req, res) => {
-    res.render('register');
+    res.render('register',{noNavbar: true});
     }
 );
 app.post('/register', auth.registerUser);
 app.get('/login', (req, res) => {   
-    res.render('login');
+    res.render('login',{noNavbar: true});
     }
 );
 app.post('/login', auth.loginUser);
@@ -65,7 +71,13 @@ app.get('/logout', auth.logoutUser);
 
 app.get('/index', async (req, res) => {
     if (req.isAuthenticated()) {
-        const user = await User.findById(req.user._id).populate('courses').populate('schedules').exec();
+        const user = await User.findById(req.user._id).populate('courses').populate({
+            path: 'schedules',
+            populate: {
+                path: 'courses',
+                model: 'Course'
+            }
+        }).exec();
         res.render('index', {user});
     } else {
         res.redirect('/login');
@@ -106,6 +118,203 @@ app.post('/add-course', async (req, res) => {
 
 
 
+async function generateSchedulesForUser(userId) {
+    try {
+      // Fetch all courses for the user
+      const courses = await Course.find({ user: userId });
+  
+      // Generate all valid combinations under the credit limit without time conflicts
+      const courseCombinations = getAllValidCombinations(courses, 18);
+  
+      const schedules = [];
+  
+      for (let i = 0; i < courseCombinations.length; i++) {
+        const combination = courseCombinations[i];
+  
+        // Calculate total credits and priority count
+        const totalCredits = combination.reduce((sum, course) => sum + course.courseCredits, 0);
+        const priorityCount = combination.filter(course => course.priority).length;
+  
+        // Create a new schedule document
+        const schedule = new Schedule({
+          user: userId,
+          name: `Schedule ${i + 1}`,
+          courses: combination.map(course => course._id),
+          priorityCount: priorityCount,
+          totalCredits: totalCredits,
+        });
+  
+        // Save the schedule to the database
+        await schedule.save();
+        schedules.push(schedule);
+      }
+  
+      // Sort the schedules by priorityCount in descending order
+      schedules.sort((a, b) => b.priorityCount - a.priorityCount);
+  
+      return schedules;
+    } catch (error) {
+      console.error('Error generating schedules:', error);
+      throw error;
+    }
+  }
+  
+  // Helper function to generate all valid combinations under the credit limit without time conflicts
+  function getAllValidCombinations(courses, creditLimit) {
+    const results = [];
+    const totalCourses = courses.length;
+  
+    // Total number of combinations is 2^n (excluding the empty set)
+    const totalCombinations = Math.pow(2, totalCourses);
+  
+    for (let i = 1; i < totalCombinations; i++) {
+      const combination = [];
+      let totalCredits = 0;
+      let valid = true;
+  
+      for (let j = 0; j < totalCourses; j++) {
+        // Check if the j-th bit is set in i
+        if (i & (1 << j)) {
+          const course = courses[j];
+  
+          // Check for time conflicts with existing courses in the combination
+          for (const existingCourse of combination) {
+            if (hasTimeConflict(course, existingCourse)) {
+              valid = false;
+              break;
+            }
+          }
+  
+          if (!valid) {
+            break;
+          }
+  
+          combination.push(course);
+          totalCredits += course.courseCredits;
+  
+          // Early exit if totalCredits exceeds creditLimit
+          if (totalCredits > creditLimit) {
+            valid = false;
+            break;
+          }
+        }
+      }
+  
+      // Add combination if it's valid and totalCredits is within the limit
+      if (valid && totalCredits <= creditLimit) {
+        results.push(combination);
+      }
+    }
+  
+    return results;
+  }
+  
+  // Helper function to check for time conflicts between two courses
+  function hasTimeConflict(course1, course2) {
+    // Check if the courses share any days
+    const sharedDays = course1.days.filter(day => course2.days.includes(day));
+    if (sharedDays.length === 0) {
+      // No shared days, so no conflict
+      return false;
+    }
+  
+    // Convert start and end times to minutes
+    const start1 = parseTime(course1.startTime);
+    const end1 = parseTime(course1.endTime);
+    const start2 = parseTime(course2.startTime);
+    const end2 = parseTime(course2.endTime);
+  
+    // Check for time overlap
+    const overlap = start1 < end2 && start2 < end1;
+    return overlap;
+  }
+  
+  // Helper function to parse time strings in "HH:mm" format to minutes
+  function parseTime(timeStr) {
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    return hours * 60 + minutes;
+  }
+
+
+
+
+app.post('/generate-schedules', async (req, res) => {
+    if (req.isAuthenticated()) {
+        await Schedule.deleteMany({ user: req.user._id }).exec();
+        const schedules = await generateSchedulesForUser(req.user._id);
+        console.log('Generated schedules:', schedules);
+        for (const schedule of schedules) {
+            schedule.user = req.user._id;
+            await schedule.save();
+            await User.findByIdAndUpdate(req.user._id, { $push: { schedules: schedule._id } }).exec();
+        }
+        res.redirect('index');
+    } else {
+        res.redirect('/login');
+    }
+});
+
+app.post('/delete-course/:id', async (req, res) => {
+    if (req.isAuthenticated()) {
+        try {
+            const courseId = req.params.id;
+        
+            // Verify that the course belongs to the user
+            const course = await Course.findOne({ _id: courseId, user: req.user._id });
+            if (!course) {
+                return res.status(404).send('Course not found');
+            }
+        
+            // Delete the course
+            await Course.findByIdAndDelete(courseId);
+            
+            // Update the user's courses array
+            await User.findByIdAndUpdate(req.user._id, { $pull: { courses: courseId } }).exec();
+        
+            // Redirect back to the courses page
+            res.redirect('/index'); // Adjust the redirect path as needed
+        } catch (error) {
+            console.error('Error deleting course:', error);
+            res.status(500).send('Server Error');
+        }
+    } else {
+        res.redirect('/login');
+    }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+app.post('/generate-schedules', async (req, res) => {
+    if (req.isAuthenticated()) {
+        const user = await User.findById(req.user._id).populate('courses').exec();
+        await Schedule.deleteMany({ user: req.user._id }).exec();
+        await User.findByIdAndUpdate(req.user._id, { $set: { schedules: [] } }).exec();
+        const tempSchedules = generateSchedules(user.courses);
+        for (const schedule of tempSchedules) {
+            schedule.user = req.user._id;
+            await schedule.save();
+            await User.findByIdAndUpdate(req.user._id, { $push: { schedules: schedule._id } }).exec();
+        }
+        res.redirect('index');
+    } else {
+        res.redirect('/login');
+    }
+});
+
+
 // Functions below need to be tested
 
 function isConflict(course1, course2) {
@@ -143,7 +352,7 @@ function calculateCredits(courses) {
     return courses.reduce((total, course) => total + course.courseCredits, 0);
 }
 
-function generateSchedules(courses) {
+function generateSchedules(courses, userID) {
     const nonConflictingPermutations = generatePermutations(courses).filter(permutation => {
         for (let i = 0; i < permutation.length; i++) {
             for (let j = i + 1; j < permutation.length; j++) {
@@ -160,7 +369,7 @@ function generateSchedules(courses) {
     const schedules = validSchedules.map(scheduleCourses => {
         const priorityCount = scheduleCourses.filter(course => course.priority).length;
         return new Schedule({
-            user: null, // This should be set to the appropriate user ID
+            user: userID, // This should be set to the appropriate user ID
             name: 'Generated Schedule',
             courses: scheduleCourses.map(course => course._id),
             priorityCount: priorityCount,
@@ -173,7 +382,7 @@ function generateSchedules(courses) {
 
     return schedules;
 }
-
+*/
 
 
 

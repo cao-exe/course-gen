@@ -3,30 +3,99 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Courses</title>
+    <title>Home</title>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+    <script defer src="/js/bootstrap.bundle.min.js"></script>
 </head>
 <body>
-    <header>
-        <button onclick="window.location.href='/add-course'">Add Course</button>
+    <header class="bg-light p-3 mb-4">
+        <div class="container d-flex justify-content-between align-items-center">
+            <h1>Course Schedule</h1>
+            <div>
+                <form action="/add-course" class="d-inline mb-0">
+                    <button type="submit" class="btn btn-primary">Add Course</button>
+                </form>
+                <form action="/generate-schedules" method="post" class="d-inline mb-0">
+                    <button type="submit" id="generate-schedule-btn" class="btn btn-success">Generate Schedules</button>
+                </form>
+            </div>
+        </div>
     </header>
-    <main>
-        <ul>
-            {{#if user.courses}}
-                {{#each user.courses}}
-                    <li>
-                        <h2>Title:{{this.title}}</h2>
-                        <p>Professor: {{this.professor}}</p>
-                        <p>Priority: {{this.priority}}</p>
-                        <p>Days: {{this.days}}</p>
-                        <p>Start Time: {{this.startTime}}</p>
-                        <p>End Time: {{this.endTime}}</p>
-                        <p>Credits: {{this.courseCredits}}</p>
-                    </li>
-                {{/each}}
-            {{else}}
-                <li>No courses available.</li>
-            {{/if}}
-        </ul>
+
+    <main class="container">
+        <div class="row">
+            <section class="col-md-6 mb-5">
+                <h2 class="mb-3">Your Courses</h2>
+                <ul class="list-group">
+                    {{#if user.courses}}
+                        {{#each user.courses}}
+                            <li class="list-group-item">
+                                <h3 class="h5">Title: {{this.title}}</h3>
+                                <p>Professor: {{this.professor}}</p>
+                                <p>Priority: {{this.priority}}</p>
+                                <p>Days: {{this.days}}</p>
+                                <p>Start Time: {{this.startTime}}</p>
+                                <p>End Time: {{this.endTime}}</p>
+                                <p>Credits: {{this.courseCredits}}</p>
+                                <form action="/delete-course/{{this._id}}" method="POST" class="d-inline">
+                                    <button type="submit" class="btn btn-danger btn-sm">Delete Course</button>
+                                </form>
+                            </li>
+                        {{/each}}
+                    {{else}}
+                        <li class="list-group-item">No courses available.</li>
+                    {{/if}}
+                </ul>
+            </section>
+
+            <section class="col-md-6 mb-5">
+                <h2 class="mb-3">Your Schedules</h2>
+                <ul class="list-group">
+                    {{#if user.schedules}}
+                        {{#each user.schedules}}
+                            <li class="list-group-item">
+                                <h3 class="h5">{{this.name}}</h3>
+                                {{#if this.courses}}
+                                    <p>Courses:</p>
+                                    <ul>
+                                        {{#each this.courses}}
+                                            <li>{{this.title}}</li>
+                                        {{/each}}
+                                    </ul>
+                                    <p>Priority: {{this.priorityCount}}</p>
+                                    <p>Total Credits: {{this.totalCredits}}</p>
+                                {{/if}}
+                            </li>
+                        {{/each}}
+                    {{/if}}
+                </ul>
+            </section>
+        </div>
+
+        <section>
+            <h2 class="mb-3">Temporary Schedules</h2>
+            <ul class="list-group">
+                {{#if tempSchedules}}
+                    {{#each tempSchedules}}
+                        <li class="list-group-item">
+                            <h3 class="h5">{{this.name}}</h3>
+                            {{#if this.courses}}
+                                <p>Courses:</p>
+                                <ul>
+                                    {{#each this.courses}}
+                                        <li>{{this.title}}</li>
+                                    {{/each}}
+                                </ul>
+                                <p>Priority: {{this.priorityCount}}</p>
+                                <p>Total Credits: {{this.totalCredits}}</p>
+                            {{/if}}
+                        </li>
+                    {{/each}}
+                {{/if}}
+            </ul>
+        </section>
     </main>
 </body>
 </html>
+

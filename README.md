@@ -21,6 +21,7 @@ An Example User:
 {
   username: "tc3661",
   schedules: // an array of references to Schedule documents
+  savedSchedules: // an array of references to Saved Schedule documentss
   courses: // an array of references to Course documents
 }
 ```
@@ -33,6 +34,7 @@ An Example Schedule:
   name: // name of schedule
   courses: // an array of references to Course documents
   priorityCount: // number of priority courses in the schedule
+  totalCredits: // total number of credits in the schedule
   createdAt: // timestamp
 }
 ```
