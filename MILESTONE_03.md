@@ -39,6 +39,12 @@ https://github.com/nyu-csci-ua-0467-001-002-fall-2024/final-project-cao-exe/blob
 
 https://github.com/nyu-csci-ua-0467-001-002-fall-2024/final-project-cao-exe/blob/master/auth.mjs#L24
 
+Bootstrap
+[login page](https://github.com/nyu-csci-ua-0467-001-002-fall-2024/final-project-cao-exe/blob/master/src/views/login.hbs)
+[registration page](https://github.com/nyu-csci-ua-0467-001-002-fall-2024/final-project-cao-exe/blob/master/src/views/register.hbs)
+[index](https://github.com/nyu-csci-ua-0467-001-002-fall-2024/final-project-cao-exe/blob/master/src/views/index.hbs)
+[add-course](https://github.com/nyu-csci-ua-0467-001-002-fall-2024/final-project-cao-exe/blob/master/src/views/add-course.hbs)
+[layout](https://github.com/nyu-csci-ua-0467-001-002-fall-2024/final-project-cao-exe/blob/master/src/views/layout.hbs)
 
 References 
 ---
