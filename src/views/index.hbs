@@ -52,6 +52,38 @@
             <section class="col-md-6 mb-5">
                 <h2 class="mb-3">Your Schedules</h2>
                 <ul class="list-group">
+                    <!-- Saved Schedules Section -->
+                    {{#if user.savedschedules}}
+                        <li class="list-group-item active bg-success text-white">
+                            <h3 class="h5">Saved Schedules</h3>
+                        </li>
+                        {{#each user.savedschedules}}
+                            <li class="list-group-item">
+                                <h3 class="h5">{{this.name}}</h3>
+                                {{#if this.courses}}
+                                    <p>Courses:</p>
+                                    <ul>
+                                        {{#each this.courses}}
+                                            <li>{{this.title}}</li>
+                                        {{/each}}
+                                    </ul>
+                                    <p>Priority: {{this.priorityCount}}</p>
+                                    <p>Total Credits: {{this.totalCredits}}</p>
+                                {{/if}}
+                                <!-- Delete Schedule Button -->
+                                <form action="/delete-saved-schedule/{{this._id}}" method="POST" class="d-inline">
+                                    <button type="submit" class="btn btn-danger btn-sm">Delete Schedule</button>
+                                </form>
+                            </li>
+                        {{/each}}
+                    {{else}}
+                        <li class="list-group-item">No saved schedules available.</li>
+                    {{/if}}
+
+                    <!-- Regular Schedules Section -->
+                    <li class="list-group-item active bg-primary text-white">
+                        <h3 class="h5">Generated Schedules</h3>
+                    </li>
                     {{#if user.schedules}}
                         {{#each user.schedules}}
                             <li class="list-group-item">
@@ -66,35 +98,17 @@
                                     <p>Priority: {{this.priorityCount}}</p>
                                     <p>Total Credits: {{this.totalCredits}}</p>
                                 {{/if}}
+                                <!-- Save Schedule Button -->
+                                <form action="/save-schedule/{{this._id}}" method="POST" class="d-inline">
+                                    <button type="submit" class="btn btn-primary btn-sm">Save Schedule</button>
+                                </form>
                             </li>
                         {{/each}}
+                    {{else}}
+                        <li class="list-group-item">No schedules available.</li>
                     {{/if}}
                 </ul>
             </section>
-        </div>
-
-        <section>
-            <h2 class="mb-3">Temporary Schedules</h2>
-            <ul class="list-group">
-                {{#if tempSchedules}}
-                    {{#each tempSchedules}}
-                        <li class="list-group-item">
-                            <h3 class="h5">{{this.name}}</h3>
-                            {{#if this.courses}}
-                                <p>Courses:</p>
-                                <ul>
-                                    {{#each this.courses}}
-                                        <li>{{this.title}}</li>
-                                    {{/each}}
-                                </ul>
-                                <p>Priority: {{this.priorityCount}}</p>
-                                <p>Total Credits: {{this.totalCredits}}</p>
-                            {{/if}}
-                        </li>
-                    {{/each}}
-                {{/if}}
-            </ul>
-        </section>
     </main>
 </body>
 </html>

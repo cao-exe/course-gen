@@ -77,7 +77,9 @@ app.get('/index', async (req, res) => {
                 path: 'courses',
                 model: 'Course'
             }
-        }).exec();
+        })
+        .populate('savedschedules') // Populate saved schedules
+        .exec();
         res.render('index', {user});
     } else {
         res.redirect('/login');
@@ -150,8 +152,12 @@ async function generateSchedulesForUser(userId) {
       }
   
       // Sort the schedules by priorityCount in descending order
-      schedules.sort((a, b) => b.priorityCount - a.priorityCount);
-  
+      schedules.sort((a, b) => {
+        if (b.priorityCount === a.priorityCount) {
+          return b.totalCredits - a.totalCredits;
+        }
+        return b.priorityCount - a.priorityCount;
+      });
       return schedules;
     } catch (error) {
       console.error('Error generating schedules:', error);
@@ -236,8 +242,6 @@ async function generateSchedulesForUser(userId) {
   }
 
 
-
-
 app.post('/generate-schedules', async (req, res) => {
     if (req.isAuthenticated()) {
         await Schedule.deleteMany({ user: req.user._id }).exec();
@@ -280,6 +284,83 @@ app.post('/delete-course/:id', async (req, res) => {
     } else {
         res.redirect('/login');
     }
+});
+
+app.post('/save-schedule/:id', async (req, res) => {
+  if (req.isAuthenticated()) {
+      try {
+          const scheduleId = req.params.id;
+
+          // Find the schedule to be saved
+          const schedule = await Schedule.findById(scheduleId).populate('courses').exec();
+          if (!schedule) {
+              return res.status(404).send('Schedule not found');
+          }
+
+          // Create a SavedSchedule object
+          const savedSchedule = new mongoose.model('SavedSchedule')({
+              user: req.user._id,
+              name: schedule.name,
+              courses: schedule.courses.map(course => ({
+                  title: course.title,
+                  professor: course.professor,
+                  priority: course.priority,
+                  days: course.days,
+                  startTime: course.startTime,
+                  endTime: course.endTime,
+                  courseCredits: course.courseCredits,
+              })),
+              priorityCount: schedule.priorityCount,
+              totalCredits: schedule.totalCredits,
+              createdAt: new Date(),
+          });
+
+          // Save the SavedSchedule to the database
+          await savedSchedule.save();
+
+          // Add the saved schedule to the user's `savedschedules` array
+          await User.findByIdAndUpdate(req.user._id, { $push: { savedschedules: savedSchedule._id } }).exec();
+
+          res.redirect('/index'); // Redirect back to the index page
+      } catch (error) {
+          console.error('Error saving schedule:', error);
+          res.status(500).send('Server Error');
+      }
+  } else {
+      res.redirect('/login');
+  }
+});
+
+app.post('/delete-saved-schedule/:id', async (req, res) => {
+  if (req.isAuthenticated()) {
+      try {
+          const savedScheduleId = req.params.id;
+
+          // Verify that the saved schedule belongs to the user
+          const savedSchedule = await mongoose.model('SavedSchedule').findOne({
+              _id: savedScheduleId,
+              user: req.user._id,
+          });
+          if (!savedSchedule) {
+              return res.status(404).send('Saved schedule not found');
+          }
+
+          // Delete the saved schedule
+          await mongoose.model('SavedSchedule').findByIdAndDelete(savedScheduleId);
+
+          // Remove the reference from the user's `savedschedules` array
+          await User.findByIdAndUpdate(req.user._id, {
+              $pull: { savedschedules: savedScheduleId },
+          }).exec();
+
+          res.redirect('/index'); // Redirect back to the index page
+      } catch (error) {
+          console.error('Error deleting saved schedule:', error);
+          res.status(500).send('Server Error');
+      }
+  } else {
+      res.redirect('/login');
+  }
 });
 
 
