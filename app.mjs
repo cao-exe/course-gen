@@ -5,6 +5,7 @@ import session from 'express-session';
 import path from 'path'
 import { fileURLToPath } from 'url';
 import mongoose from 'mongoose';
+import MongoStore from 'connect-mongo';
 import hbs from 'hbs';
 import passport from 'passport';
 import * as auth from './auth.mjs';
@@ -15,17 +16,26 @@ const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 app.set('view engine', 'hbs');
-app.set('views', path.join(process.cwd(), 'src', 'views')); 
+app.set('views', path.join(process.cwd(), 'src','views')); 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.urlencoded({ extended: true }));
 
-// Session setup
-app.use(session({
-    secret: 'secret', // Replace with a secure secret key
+// Session setup with MongoDB Store
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || 'default_secret_key', // Use an environment variable for security
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false }, // Set secure: true if using HTTPS in production
-}));
+    cookie: {
+      secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+      maxAge: 1000 * 60 * 60 * 24, // 1 day
+    },
+    store: MongoStore.create({
+      mongoUrl: process.env.DSN, // Use your MongoDB connection string
+      collectionName: 'sessions',
+    }),
+  })
+);
 
 // Bootstrap Middleware
 app.use('/css', express.static(path.join(__dirname, 'node_modules/bootstrap/dist/css')));
@@ -42,84 +52,26 @@ const User = mongoose.model('User');
 
 // Passport strategy for local authentication
 passport.use(User.createStrategy());
-passport.serializeUser(User.serializeUser());
-passport.deserializeUser(User.deserializeUser());
+// Serialize and Deserialize User
+passport.serializeUser((user, done) => {
+  done(null, user.id); // Save user ID to session
+});
+
+passport.deserializeUser(async (id, done) => {
+  try {
+    const user = await User.findById(id);
+    done(null, user); // Attach user object to `req.user`
+  } catch (err) {
+    done(err);
+  }
+});
+
+
 app.use('/css', express.static(path.join(__dirname, 'node_modules/bootstrap/dist/css')));
 app.use('/js', express.static(path.join(__dirname, 'node_modules/bootstrap/dist/js')));
 
 /////////////////////////////////////////////////////////
-
-
-
-app.get('/', (req, res) => {
-    res.redirect('login');
-    }
-);
-
-
-app.get('/register', (req, res) => {
-    res.render('register',{noNavbar: true});
-    }
-);
-app.post('/register', auth.registerUser);
-app.get('/login', (req, res) => {   
-    res.render('login',{noNavbar: true});
-    }
-);
-app.post('/login', auth.loginUser);
-app.get('/logout', auth.logoutUser);
-
-app.get('/index', async (req, res) => {
-    if (req.isAuthenticated()) {
-        const user = await User.findById(req.user._id).populate('courses').populate({
-            path: 'schedules',
-            populate: {
-                path: 'courses',
-                model: 'Course'
-            }
-        })
-        .populate('savedschedules') // Populate saved schedules
-        .exec();
-        res.render('index', {user});
-    } else {
-        res.redirect('/login');
-    }
-});
-
-app.get('/add-course', (req, res) => {
-    if (req.isAuthenticated()) {
-        res.render('add-course')
-    }
-    else {
-        res.redirect('/login');
-    }
-});
-
-app.post('/add-course', async (req, res) => {
-    const { title, professor, days, startTime, endTime, courseCredits, priority } = req.body;
-    const course = new Course({
-        user: req.user._id, // Set to the authenticated user's ID
-        title,
-        professor,
-        days,
-        startTime,
-        endTime,
-        courseCredits,
-        priority: !!priority,
-        createdAt: new Date()
-    });
-    await course.save();
-    try {
-        await User.findByIdAndUpdate(req.user._id, { $push: { courses: course._id } }).exec();
-    } catch (err) {
-        console.error(err);
-    }
-    res.redirect('index');
-}
-);
-
-
-
+// Function to generate schedules for a user
 async function generateSchedulesForUser(userId) {
     try {
       // Fetch all courses for the user
@@ -205,13 +157,12 @@ async function generateSchedulesForUser(userId) {
           }
         }
       }
-  
+
       // Add combination if it's valid and totalCredits is within the limit
       if (valid && totalCredits <= creditLimit) {
         results.push(combination);
       }
     }
-  
     return results;
   }
   
@@ -242,11 +193,89 @@ async function generateSchedulesForUser(userId) {
   }
 
 
+
+///////////////////////// Routes /////////////////////////////
+  app.get('/', (req, res) => {
+    res.redirect('login');
+    }
+);
+
+app.get('/register', (req, res) => {
+    res.render('register',{noNavbar: true});
+    }
+);
+
+app.post('/register', auth.registerUser);
+
+app.get('/login', (req, res) => {   
+    res.render('login',{noNavbar: true});
+    }
+);
+
+app.post('/login', auth.loginUser);
+
+app.post('/logout', (req, res, next) => {
+  req.logout(err => {
+    if (err) return next(err);
+    req.session.destroy(() => {
+      res.redirect('/login');
+    });
+  });
+});
+
+app.get('/index', async (req, res) => {
+    if (req.isAuthenticated()) {
+        const user = await User.findById(req.user._id).populate('courses').populate({
+            path: 'schedules',
+            populate: {
+                path: 'courses',
+                model: 'Course'
+            }
+        })
+        .populate('savedschedules') // Populate saved schedules
+        .exec();
+        res.render('index', {user});
+    } else {
+        res.redirect('/login');
+    }
+});
+
+app.get('/add-course', (req, res) => {
+    if (req.isAuthenticated()) {
+        res.render('add-course')
+    }
+    else {
+        res.redirect('/login');
+    }
+});
+
+app.post('/add-course', async (req, res) => {
+    const { title, professor, days, startTime, endTime, courseCredits, priority } = req.body;
+    const course = new Course({
+        user: req.user._id, // Set to the authenticated user's ID
+        title,
+        professor,
+        days,
+        startTime,
+        endTime,
+        courseCredits,
+        priority: !!priority,
+        createdAt: new Date()
+    });
+    await course.save();
+    try {
+        await User.findByIdAndUpdate(req.user._id, { $push: { courses: course._id } }).exec();
+    } catch (err) {
+        console.error(err);
+    }
+    res.redirect('index');
+}
+);
+
 app.post('/generate-schedules', async (req, res) => {
     if (req.isAuthenticated()) {
         await Schedule.deleteMany({ user: req.user._id }).exec();
         const schedules = await generateSchedulesForUser(req.user._id);
-        console.log('Generated schedules:', schedules);
         for (const schedule of schedules) {
             schedule.user = req.user._id;
             await schedule.save();
@@ -363,6 +392,80 @@ app.post('/delete-saved-schedule/:id', async (req, res) => {
   }
 });
 
+app.get('/view-schedule/:id', async (req, res) => {
+  if (req.isAuthenticated()) {
+      const { id } = req.params;
+      const { type } = req.query;
+
+      try {
+          let schedule;
+          if (type === 'saved') {
+              schedule = await mongoose.model('SavedSchedule').findById(id).populate('courses').exec();
+          } else {
+              schedule = await mongoose.model('Schedule').findById(id).populate('courses').exec();
+          }
+
+          if (!schedule) {
+              return res.status(404).json({ error: 'Schedule not found' });
+          }
+
+          res.json(schedule);
+      } catch (error) {
+          console.error('Error fetching schedule details:', error);
+          res.status(500).json({ error: 'Server error' });
+      }
+  } else {
+      res.status(401).json({ error: 'Unauthorized' });
+  }
+});
+
+app.post('/save-schedule', async (req, res) => {
+  if (req.isAuthenticated()) {
+    try {
+      const { scheduleId, scheduleName } = req.body;
+
+      // Find the schedule to be saved
+      const schedule = await Schedule.findById(scheduleId).populate('courses').exec();
+      if (!schedule) {
+        return res.status(404).send('Schedule not found');
+      }
+
+      // Create a SavedSchedule object
+      const savedSchedule = new mongoose.model('SavedSchedule')({
+        user: req.user._id,
+        name: scheduleName, // Use the name provided by the user
+        courses: schedule.courses.map(course => ({
+          title: course.title,
+          professor: course.professor,
+          priority: course.priority,
+          days: course.days,
+          startTime: course.startTime,
+          endTime: course.endTime,
+          courseCredits: course.courseCredits,
+        })),
+        priorityCount: schedule.priorityCount,
+        totalCredits: schedule.totalCredits,
+        createdAt: new Date(),
+      });
+
+      // Save the SavedSchedule to the database
+      await savedSchedule.save();
+
+      // Add the saved schedule to the user's `savedschedules` array
+      await User.findByIdAndUpdate(req.user._id, { $push: { savedschedules: savedSchedule._id } }).exec();
+
+      res.redirect('/index'); // Redirect back to the index page
+    } catch (error) {
+      console.error('Error saving schedule:', error);
+      res.status(500).send('Server Error');
+    }
+  } else {
+    res.redirect('/login');
+  }
+});
 
 
-app.listen(process.env.PORT || 3000);
+export {app};
+app.listen(process.env.PORT || 3000, () => {
+  console.log('Server is running...');
+});

@@ -9,107 +9,176 @@
     <script defer src="/js/bootstrap.bundle.min.js"></script>
 </head>
 <body>
-    <header class="bg-light p-3 mb-4">
+    <header class="bg-light p-3 mb-4 shadow-sm">
         <div class="container d-flex justify-content-between align-items-center">
-            <h1>Course Schedule</h1>
-            <div>
-                <form action="/add-course" class="d-inline mb-0">
-                    <button type="submit" class="btn btn-primary">Add Course</button>
-                </form>
-                <form action="/generate-schedules" method="post" class="d-inline mb-0">
-                    <button type="submit" id="generate-schedule-btn" class="btn btn-success">Generate Schedules</button>
-                </form>
-            </div>
+            <h1 class="text-primary">Course Schedule</h1>
         </div>
     </header>
 
     <main class="container">
         <div class="row">
-            <section class="col-md-6 mb-5">
-                <h2 class="mb-3">Your Courses</h2>
+            <!-- Courses Section -->
+            <section class="col-md-4 mb-4">
+                <h2 class="mb-3 text-secondary">Your Courses</h2>
+                <div class="mb-3">
+                    <form action="/add-course" class="d-grid">
+                        <button type="submit" class="btn btn-outline-primary btn-sm">Add Course</button>
+                    </form>
+                </div>
                 <ul class="list-group">
                     {{#if user.courses}}
                         {{#each user.courses}}
-                            <li class="list-group-item">
-                                <h3 class="h5">Title: {{this.title}}</h3>
-                                <p>Professor: {{this.professor}}</p>
-                                <p>Priority: {{this.priority}}</p>
-                                <p>Days: {{this.days}}</p>
-                                <p>Start Time: {{this.startTime}}</p>
-                                <p>End Time: {{this.endTime}}</p>
-                                <p>Credits: {{this.courseCredits}}</p>
-                                <form action="/delete-course/{{this._id}}" method="POST" class="d-inline">
-                                    <button type="submit" class="btn btn-danger btn-sm">Delete Course</button>
+                            <li class="list-group-item shadow-sm mb-3">
+                                <h4 class="h6 text-primary">{{this.title}}</h4>
+                                <p class="mb-1"><strong>Professor:</strong> {{this.professor}}</p>
+                                <p class="mb-1"><strong>Priority:</strong> {{this.priority}}</p>
+                                <p class="mb-1"><strong>Days:</strong> {{this.days}}</p>
+                                <p class="mb-1"><strong>Start Time:</strong> {{this.startTime}}</p>
+                                <p class="mb-1"><strong>End Time:</strong> {{this.endTime}}</p>
+                                <p class="mb-1"><strong>Credits:</strong> {{this.courseCredits}}</p>
+                                <form action="/delete-course/{{this._id}}" method="POST" class="mt-2">
+                                    <button type="submit" class="btn btn-danger btn-sm w-auto">Delete</button>
                                 </form>
                             </li>
                         {{/each}}
                     {{else}}
-                        <li class="list-group-item">No courses available.</li>
+                        <li class="list-group-item text-muted">No courses available.</li>
                     {{/if}}
                 </ul>
             </section>
 
-            <section class="col-md-6 mb-5">
-                <h2 class="mb-3">Your Schedules</h2>
+            <!-- Schedules Section -->
+            <section class="col-md-4 mb-4">
+                <h2 class="mb-3 text-secondary">Your Schedules</h2>
+                <div class="mb-3">
+                    <form action="/generate-schedules" method="post" class="d-grid">
+                        <button type="submit" id="generate-schedule-btn" class="btn btn-outline-success btn-sm">Generate Schedules</button>
+                    </form>
+                </div>
                 <ul class="list-group">
                     <!-- Saved Schedules Section -->
                     {{#if user.savedschedules}}
-                        <li class="list-group-item active bg-success text-white">
-                            <h3 class="h5">Saved Schedules</h3>
+                        <li class="list-group-item bg-success text-white mb-3 shadow-sm">
+                            <h4 class="h6 mb-0">Saved Schedules</h4>
                         </li>
                         {{#each user.savedschedules}}
-                            <li class="list-group-item">
-                                <h3 class="h5">{{this.name}}</h3>
-                                {{#if this.courses}}
-                                    <p>Courses:</p>
-                                    <ul>
-                                        {{#each this.courses}}
-                                            <li>{{this.title}}</li>
-                                        {{/each}}
-                                    </ul>
-                                    <p>Priority: {{this.priorityCount}}</p>
-                                    <p>Total Credits: {{this.totalCredits}}</p>
-                                {{/if}}
-                                <!-- Delete Schedule Button -->
-                                <form action="/delete-saved-schedule/{{this._id}}" method="POST" class="d-inline">
-                                    <button type="submit" class="btn btn-danger btn-sm">Delete Schedule</button>
-                                </form>
+                            <li class="list-group-item shadow-sm mb-3">
+                                <h4 class="h6 text-primary">{{this.name}}</h4>
+                                <p class="mb-1"><strong>Priority:</strong> {{this.priorityCount}}</p>
+                                <p class="mb-1"><strong>Total Credits:</strong> {{this.totalCredits}}</p>
+                                <div class="d-flex justify-content-between">
+                                    <form action="/delete-saved-schedule/{{this._id}}" method="POST">
+                                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                    </form>
+                                    <button class="btn btn-info btn-sm" onclick="viewSchedule('{{this._id}}', 'saved')">View</button>
+                                </div>
                             </li>
                         {{/each}}
                     {{else}}
-                        <li class="list-group-item">No saved schedules available.</li>
+                        <li class="list-group-item text-muted">No saved schedules available.</li>
                     {{/if}}
 
                     <!-- Regular Schedules Section -->
-                    <li class="list-group-item active bg-primary text-white">
-                        <h3 class="h5">Generated Schedules</h3>
+                    <li class="list-group-item bg-primary text-white mb-3 shadow-sm">
+                        <h4 class="h6 mb-0">Generated Schedules</h4>
                     </li>
                     {{#if user.schedules}}
                         {{#each user.schedules}}
-                            <li class="list-group-item">
-                                <h3 class="h5">{{this.name}}</h3>
-                                {{#if this.courses}}
-                                    <p>Courses:</p>
-                                    <ul>
-                                        {{#each this.courses}}
-                                            <li>{{this.title}}</li>
-                                        {{/each}}
-                                    </ul>
-                                    <p>Priority: {{this.priorityCount}}</p>
-                                    <p>Total Credits: {{this.totalCredits}}</p>
-                                {{/if}}
-                                <!-- Save Schedule Button -->
-                                <form action="/save-schedule/{{this._id}}" method="POST" class="d-inline">
-                                    <button type="submit" class="btn btn-primary btn-sm">Save Schedule</button>
-                                </form>
+                            <li class="list-group-item shadow-sm mb-3">
+                                <h4 class="h6 text-primary">{{this.name}}</h4>
+                                <p class="mb-1"><strong>Priority:</strong> {{this.priorityCount}}</p>
+                                <p class="mb-1"><strong>Total Credits:</strong> {{this.totalCredits}}</p>
+                                <div class="d-flex justify-content-between">
+                                    <button 
+                                        class="btn btn-outline-primary btn-sm"
+                                        onclick="openSaveModal('{{this._id}}')">Save
+                                    </button>
+                                    <button class="btn btn-info btn-sm" onclick="viewSchedule('{{this._id}}', 'regular')">View</button>
+                                </div>
                             </li>
                         {{/each}}
                     {{else}}
-                        <li class="list-group-item">No schedules available.</li>
+                        <li class="list-group-item text-muted">No schedules available.</li>
                     {{/if}}
                 </ul>
             </section>
+
+            <!-- Detailed View Section -->
+            <section class="col-md-4 mb-4">
+                <h2 class="mb-3 text-secondary">Schedule Details</h2>
+                <div id="schedule-detail-content" class="border p-3 rounded shadow-sm bg-light">
+                    <p class="text-muted">Select a schedule to view details.</p>
+                </div>
+            </section>
+        </div>
     </main>
+
+    <!-- Modal for Saving Schedule -->
+    <div class="modal fade" id="saveModal" tabindex="-1" aria-labelledby="saveModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="saveModalLabel">Save Schedule</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="saveScheduleForm" action="/save-schedule" method="POST">
+                    <div class="modal-body">
+                        <input type="hidden" name="scheduleId" id="scheduleId">
+                        <div class="mb-3">
+                            <label for="scheduleName" class="form-label">Schedule Name</label>
+                            <input type="text" class="form-control" id="scheduleName" name="scheduleName" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
+      
+<script>
+    async function viewSchedule(scheduleId, scheduleType) {
+        // Fetch schedule details via an API endpoint
+        const response = await fetch(`/view-schedule/${scheduleId}?type=${scheduleType}`);
+        const schedule = await response.json();
 
+        // Populate the schedule details in the detail column
+        const detailContent = document.getElementById('schedule-detail-content');
+        if (schedule) {
+            detailContent.innerHTML = `
+                <h3 class="text-primary">${schedule.name}</h3>
+                <p><strong>Priority Count:</strong> ${schedule.priorityCount}</p>
+                <p><strong>Total Credits:</strong> ${schedule.totalCredits}</p>
+                <h4 class="text-secondary">Courses</h4>
+                <ul class="list-group">
+                    ${schedule.courses.map(course => `
+                        <li class="list-group-item mb-2">
+                            <strong>Title:</strong> ${course.title}<br>
+                            <strong>Professor:</strong> ${course.professor}<br>
+                            <strong>Priority:</strong> ${course.priority}<br>
+                            <strong>Days:</strong> ${course.days.join(', ')}<br>
+                            <strong>Start Time:</strong> ${course.startTime}<br>
+                            <strong>End Time:</strong> ${course.endTime}<br>
+                            <strong>Credits:</strong> ${course.courseCredits}
+                        </li>
+                    `).join('')}
+                </ul>
+            `;
+        } else {
+            detailContent.innerHTML = `<p class="text-danger">Schedule details not available.</p>`;
+        }
+    }
+</script>
+
+<script>
+    function openSaveModal(scheduleId) {
+        // Set the hidden input value for scheduleId in the modal form
+        document.getElementById('scheduleId').value = scheduleId;
+        // Show the modal
+        const saveModal = new bootstrap.Modal(document.getElementById('saveModal'));
+        saveModal.show();
+    }
+</script>
