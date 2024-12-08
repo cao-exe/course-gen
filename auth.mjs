@@ -9,17 +9,23 @@ const User = mongoose.model('User');
 
 // Registration Handler
 const registerUser = async (req, res) => {
-    try {
-      const newUser = new User({ username: req.body.username });
-      await User.register(newUser, req.body.password);
-      passport.authenticate('local')(req, res, () => {
-        res.redirect('/index');
-      });
-    } catch (err) {
-      res.status(400).send(err.message);
-    }
-  };
+  try {
+      const { username, password } = req.body;
 
+      // Check password length
+      if (password.length < 8) {
+          return res.status(400).send("Password must be at least 8 characters long");
+      }
+
+      const newUser = new User({ username });
+      await User.register(newUser, password);
+      passport.authenticate('local')(req, res, () => {
+          res.redirect('/index');
+      });
+  } catch (err) {
+      res.status(400).send("Registration failed");
+  }
+};
 // Login handler
 const loginUser = passport.authenticate('local', {
     successRedirect: '/index',

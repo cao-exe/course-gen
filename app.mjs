@@ -27,7 +27,7 @@ app.use(
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+      secure: false, // Use secure cookies in production
       maxAge: 1000 * 60 * 60 * 24, // 1 day
     },
     store: MongoStore.create({
@@ -72,7 +72,7 @@ app.use('/js', express.static(path.join(__dirname, 'node_modules/bootstrap/dist/
 
 /////////////////////////////////////////////////////////
 // Function to generate schedules for a user
-async function generateSchedulesForUser(userId) {
+export async function generateSchedulesForUser(userId) {
     try {
       // Fetch all courses for the user
       const courses = await Course.find({ user: userId });
@@ -118,7 +118,7 @@ async function generateSchedulesForUser(userId) {
   }
   
   // Helper function to generate all valid combinations under the credit limit without time conflicts
-  function getAllValidCombinations(courses, creditLimit) {
+  export function getAllValidCombinations(courses, creditLimit) {
     const results = [];
     const totalCourses = courses.length;
   
@@ -167,7 +167,7 @@ async function generateSchedulesForUser(userId) {
   }
   
   // Helper function to check for time conflicts between two courses
-  function hasTimeConflict(course1, course2) {
+  export function hasTimeConflict(course1, course2) {
     // Check if the courses share any days
     const sharedDays = course1.days.filter(day => course2.days.includes(day));
     if (sharedDays.length === 0) {
@@ -187,7 +187,7 @@ async function generateSchedulesForUser(userId) {
   }
   
   // Helper function to parse time strings in "HH:mm" format to minutes
-  function parseTime(timeStr) {
+  export function parseTime(timeStr) {
     const [hours, minutes] = timeStr.split(':').map(Number);
     return hours * 60 + minutes;
   }
@@ -214,6 +214,7 @@ app.get('/login', (req, res) => {
 
 app.post('/login', auth.loginUser);
 
+app.get('/logout', auth.logoutUser);
 app.post('/logout', (req, res, next) => {
   req.logout(err => {
     if (err) return next(err);
@@ -465,7 +466,8 @@ app.post('/save-schedule', async (req, res) => {
 });
 
 
-export {app};
 app.listen(process.env.PORT || 3000, () => {
   console.log('Server is running...');
 });
+
+export {app};
