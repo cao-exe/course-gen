@@ -51,35 +51,46 @@ Note: Requires login to access form.
 Save Button: Click on the save button to save the schedule to the database. The schedule will be displayed on the page.
 View Button: Click on the view button to view the details of the schedule in the side column.
 
-
 First link to github line number(s) for constructor, HOF, etc.
 ---
-(TODO: add link to line number(s) here) 
+https://github.com/nyu-csci-ua-0467-001-002-fall-2024/final-project-cao-exe/blob/master/app.mjs#L89
 
 Second link to github line number(s) for constructor, HOF, etc.
 ---
-(TODO: add link to line number(s) here) 
+https://github.com/nyu-csci-ua-0467-001-002-fall-2024/final-project-cao-exe/blob/master/app.mjs#L172
 
 Short description for links above
 ---
-(TODO: describe what each link above is, one line each... for example: myFunction is a hof that retrieves json from a url, map is used to transform the Array of Person objects into an Array of strings that represents names)
+LINES 89-90: 2 HOF functions that calculate the total credit and priority count of the courses witin a schedule combination
+
+LINE 172: HOF function that checks for shared days (conflicts) between courses within a schedule combination
 
 Link to github line number(s) for schemas (db.js or models folder)
 ---
-(TODO: add link to schemas)
+https://github.com/nyu-csci-ua-0467-001-002-fall-2024/final-project-cao-exe/blob/master/db.mjs
 
 Description of research topics above with points
 ---
-(TODO: add description of research topics here, including point values for each, one per line... for example: 2 points - applied and modified "Clean Blog" Bootstrap theme)
+2 points - Integrated Bootstrap for more user-friendly UI
+5 points - Implemented passport.js for user authentication
+3 points - Implemented mocha for unit testing
 
 Links to github line number(s) for research topics described above (one link per line)
 ---
-(TODO: add link to github line number(s), one per line for research topics ... for example, if using auth/passport, link to auth.js or where bulk of auth code is)
+[Bootstrap](https://github.com/nyu-csci-ua-0467-001-002-fall-2024/final-project-cao-exe/blob/master/src/views/index.hbs)
+[Passport.js](https://github.com/nyu-csci-ua-0467-001-002-fall-2024/final-project-cao-exe/blob/master/auth.mjs)
+[Mocha](https://github.com/nyu-csci-ua-0467-001-002-fall-2024/final-project-cao-exe/blob/master/tests/app.test.mjs)
 
 Optional project notes 
 --- 
-(TODO: optionall add add any other information required for using/testing the final project)
+Login/Register is required to access the site.
 
+Provided Account:
+- Username: test
+- Password: 12345678
+
+Warning: Running the unit tests will clear the database of all users, schedules, and courses.
+[Mocha Test Running Image](../documentation/unitTests.png)
 Attributions
 ---
-(TODO:  list sources that you have based your code off of, 1 per line, with file name, a very short description, and an accompanying url... for example: routes/index.js - Authentication code based off of http://foo.bar/baz ... alternatively, if you have already placed annotations in your project, answer "See source code comments")
+N/A
