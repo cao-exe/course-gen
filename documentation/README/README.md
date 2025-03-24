@@ -56,7 +56,7 @@ An Example Course:
 ```
 
 
-## [Link to Commented First Draft Schema](db.mjs) 
+## [Link to Commented First Draft Schema](../../db.mjs) 
 
 ## Wireframes
 
@@ -100,23 +100,12 @@ An Example Course:
     * What are unit tests? "A unit is the smallest testable unit of code - typically a function, but sometimes an object or class." --- Professor Bloomberg. We use unit tests to verify and test the behavior of each "unit" of code by giving specific inputs. Unit testing solves the issue of inefficient manually testing code for errors. 
     * Possible candidate solutions:
         * Mocha
-* (3 + 2 points) Utilize build tools (make) together with a CSS preprocessor
-    * Build tools are softwares that automate the process of creating executuable applications/files from source code. It can complete tasks like generate build scripts, check the required version of software, save resources by recompiling minimally, integrate with testing tools, and report the result of builds and tests.
-    * CSS Preprocessors are scripting language extensions for CSS allowing users to more easily write more complex css code with more features. We can use css preprocessors to allow variables, nesting logic, and modular building of css code. It helps improve maintainability, effciency, readability, and the scalability of css codes. 
-    * Possible candidate solutions:
-        * Sass
-        * Less
-        * Stylus
 * (2 points) Utilize CSS Framework/ UI toolkit
     * CSS frameworks are pre-prepared libraries of CSS styles and templates providing a foundation for more consistent and better web design. CSS frameworks come with many templating features such as predefined layout systems, typography styles, and UI components. CSS frameworks help with faster deevelopment, more responsive and consistent css code. 
     * Possible candidate solutions:
         * tailwind.css
         * Bootstrap
         * Semantic UI
-* (? points) External API (Undecided)
-  * Implement Web Share API
-  ~~* Use Bcrypt for user authentitcation ~~
-
 * (5 points) Integrate user authentication
     * Passport.js is a middleware for Node.js that allows for user authentication. It is flexible and can be used with many different strategies. It is easy to use and has a large community. 
     * Possible candidate solutions:
@@ -130,3 +119,12 @@ An Example Course:
 
 
 1. [used coursicle as inspiration for UI/UX design](https://www.coursicle.com/)
+
+
+## Test Account
+
+Username: test
+Password: 12345678
+
+Warning: Running the unit tests will clear the database of all users, schedules, and courses.
+[Mocha Test Running Image](../images/unitTests.png)
