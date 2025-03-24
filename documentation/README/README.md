@@ -62,27 +62,27 @@ An Example Course:
 
 /login - page for logging in
 
-![login](documentation/register.png)
+![login](../images/register.png)
 
 /register - page for registering an account
 
-![register](documentation/login.png)
+![register](../images/login.png)
 
 /home - page that shows existing courses and generated schedules
 
-![home/schedule](documentation/home.png)
+![home/schedule](../images/home.png)
 
 /add-course - page for adding new courses
 
-![add-course](documentation/add-course.png)
+![add-course](../images/add-course.png)
 
 /account - page for viewing user account
 
-![account](documentation/account.png)
+![account](../images/account.png)
 
 ## Site map
 
-![Site Map](documentation/SitemapV1.png)
+![Site Map](../images/SitemapV1.png)
 ## User Stories or Use Cases
 
 1. as non-registered user, I can register a new account with the site
@@ -123,11 +123,10 @@ An Example Course:
         * Passport.js
 
 
-## [Link to Initial Main Project File](app.mjs) 
+## [Link to Initial Main Project File](../../app.mjs) 
 
 
 ## Annotations / References Used
 
 
-1. [used coursicle as inspiration for UI/UX design](http://passportjs.org/docs)
-
+1. [used coursicle as inspiration for UI/UX design](https://www.coursicle.com/)
